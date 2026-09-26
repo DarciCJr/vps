@@ -1,0 +1,16 @@
+name: Deploy site
+
+on:
+  push:
+    branches:
+      - claude/focused-sagan-k0fq34
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy files to Apache
+        run: |
+          sudo rsync -av --delete --exclude='.git' --exclude='.github' ./ /var/www/html/
