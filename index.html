@@ -14,13 +14,17 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      text-align: center;
+      padding: 2rem 1rem;
+      box-sizing: border-box;
     }
     .card {
       background: #1e293b;
       padding: 2.5rem 3rem;
       border-radius: 12px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
     }
     h1 {
       color: #38bdf8;
@@ -29,12 +33,12 @@
     p {
       color: #94a3b8;
     }
-    ul {
+    ul.links {
       list-style: none;
       padding: 0;
       margin-top: 1.5rem;
     }
-    li {
+    ul.links li {
       margin: 0.5rem 0;
     }
     a {
@@ -44,15 +48,107 @@
     a:hover {
       text-decoration: underline;
     }
+    .status {
+      margin-top: 2rem;
+      text-align: left;
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+    .status h2 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin: 0 0 0.75rem 0;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.9rem;
+    }
+    .status-row:last-child {
+      border-bottom: none;
+    }
+    .status-row .label {
+      color: #94a3b8;
+    }
+    .status-row .value {
+      color: #f1f5f9;
+      font-weight: 500;
+    }
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .dot.up { background: #22c55e; }
+    .dot.down { background: #ef4444; }
+    .updated {
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: #475569;
+      text-align: right;
+    }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>Meu VPS</h1>
     <p>Servidor rodando no PC do Darci, via Cloudflare Tunnel.</p>
-    <ul>
+    <ul class="links">
       <li><a href="/projetos/">Ver projetos</a></li>
     </ul>
+
+    <div class="status">
+      <h2>Status do servidor</h2>
+      <div id="status-body">
+        <div class="status-row"><span class="label">Carregando...</span></div>
+      </div>
+      <div class="updated" id="status-updated"></div>
+    </div>
   </div>
+
+  <script>
+    fetch('/status.json?t=' + Date.now())
+      .then(r => r.json())
+      .then(data => {
+        const body = document.getElementById('status-body');
+        body.innerHTML = '';
+
+        function row(label, value) {
+          const div = document.createElement('div');
+          div.className = 'status-row';
+          div.innerHTML = '<span class="label">' + label + '</span><span class="value">' + value + '</span>';
+          body.appendChild(div);
+        }
+
+        function serviceDot(isUp) {
+          return '<span class="dot ' + (isUp ? 'up' : 'down') + '"></span>' + (isUp ? 'Ativo' : 'Parado');
+        }
+
+        row('Uptime', data.uptime || '-');
+        row('Memória', data.memory || '-');
+        row('Disco', data.disk || '-');
+        row('Apache', serviceDot(data.apache));
+        row('Cloudflare Tunnel', serviceDot(data.cloudflared));
+        row('Docker', serviceDot(data.docker));
+
+        if (data.containers) {
+          data.containers.forEach(c => row(c.name, serviceDot(c.up)));
+        }
+
+        document.getElementById('status-updated').textContent =
+          'Atualizado: ' + (data.updated_at || '-');
+      })
+      .catch(() => {
+        document.getElementById('status-body').innerHTML =
+          '<div class="status-row"><span class="label">Status indisponível</span></div>';
+      });
+  </script>
 </body>
 </html>

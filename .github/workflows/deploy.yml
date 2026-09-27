@@ -13,4 +13,4 @@ jobs:
 
       - name: Copy files to Apache
         run: |
-          rsync -av --delete --exclude='.git' --exclude='.github' ./ /var/www/html/
+          rsync -av --delete --exclude='.git' --exclude='.github' --exclude='status.json' ./ /var/www/html/

@@ -1,0 +1,38 @@
+#!/bin/bash
+# Gera /var/www/html/status.json com dados gerais do servidor.
+# Rodado via cron a cada minuto.
+
+UPTIME=$(uptime -p | sed 's/up //')
+MEMORY=$(free -h | awk '/^Mem:/ {print $3 " / " $2}')
+DISK=$(df -h / | awk 'NR==2 {print $3 " / " $2 " (" $5 " usado)"}')
+
+is_active() {
+  systemctl is-active --quiet "$1" && echo true || echo false
+}
+
+APACHE=$(is_active apache2)
+CLOUDFLARED=$(is_active cloudflared)
+DOCKER=$(is_active docker)
+
+CONTAINERS="[]"
+if command -v docker >/dev/null 2>&1; then
+  CONTAINERS=$(docker ps -a --format '{{.Names}}|{{.State}}' 2>/dev/null | \
+    awk -F'|' '{printf "{\"name\":\"%s\",\"up\":%s},", $1, ($2=="running"?"true":"false")}' | \
+    sed 's/,$//')
+  CONTAINERS="[$CONTAINERS]"
+fi
+
+UPDATED_AT=$(date '+%d/%m/%Y %H:%M:%S')
+
+cat > /var/www/html/status.json << JSON
+{
+  "uptime": "$UPTIME",
+  "memory": "$MEMORY",
+  "disk": "$DISK",
+  "apache": $APACHE,
+  "cloudflared": $CLOUDFLARED,
+  "docker": $DOCKER,
+  "containers": $CONTAINERS,
+  "updated_at": "$UPDATED_AT"
+}
+JSON
