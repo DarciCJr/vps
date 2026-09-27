@@ -131,6 +131,7 @@
           return '<span class="dot ' + (isUp ? 'up' : 'down') + '"></span>' + (isUp ? 'Ativo' : 'Parado');
         }
 
+        row('IP Público', data.public_ip || '-');
         row('Uptime', data.uptime || '-');
         row('Memória', data.memory || '-');
         row('Disco', data.disk || '-');
