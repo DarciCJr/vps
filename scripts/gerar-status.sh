@@ -11,8 +11,9 @@ LOAD=$(uptime | awk -F'load average:' '{print $2}' | xargs)
 # Foi a falta de espaço aqui que corrompeu o WSL — esse é o número que importa de verdade.
 WIN_DISK="indisponível"
 WIN_DISK_BAIXO=false
-if command -v powershell.exe >/dev/null 2>&1; then
-  WIN_RAW=$(powershell.exe -NoProfile -Command '$d=Get-PSDrive C; "{0};{1}" -f [math]::Round($d.Used/1GB,1), [math]::Round(($d.Used+$d.Free)/1GB,1)' 2>/dev/null | tr -d '\r')
+POWERSHELL="/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+if [ -x "$POWERSHELL" ]; then
+  WIN_RAW=$("$POWERSHELL" -NoProfile -Command '$d=Get-PSDrive C; "{0};{1}" -f [math]::Round($d.Used/1GB,1), [math]::Round(($d.Used+$d.Free)/1GB,1)' 2>/dev/null | tr -d '\r')
   if [ -n "$WIN_RAW" ]; then
     WIN_USED=$(echo "$WIN_RAW" | cut -d';' -f1 | tr ',' '.')
     WIN_TOTAL=$(echo "$WIN_RAW" | cut -d';' -f2 | tr ',' '.')
