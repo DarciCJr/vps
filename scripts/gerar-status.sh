@@ -22,7 +22,7 @@ if command -v docker >/dev/null 2>&1; then
   CONTAINERS="[$CONTAINERS]"
 fi
 
-PUBLIC_IP=$(curl -s --max-time 3 https://ifconfig.me || echo "indisponível")
+PUBLIC_IP=$(curl -s --max-time 8 https://ifconfig.me || echo "indisponível")
 UPDATED_AT=$(date '+%d/%m/%Y %H:%M:%S')
 
 cat > /var/www/html/status.json << JSON
