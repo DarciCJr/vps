@@ -120,10 +120,11 @@
         const body = document.getElementById('status-body');
         body.innerHTML = '';
 
-        function row(label, value) {
+        function row(label, value, alerta) {
           const div = document.createElement('div');
           div.className = 'status-row';
-          div.innerHTML = '<span class="label">' + label + '</span><span class="value">' + value + '</span>';
+          const cor = alerta ? ' style="color:#ef4444;font-weight:700;"' : '';
+          div.innerHTML = '<span class="label">' + label + '</span><span class="value"' + cor + '>' + value + '</span>';
           body.appendChild(div);
         }
 
@@ -133,8 +134,10 @@
 
         row('IP Público', data.public_ip || '-');
         row('Uptime', data.uptime || '-');
+        row('Carga (load)', data.load || '-');
         row('Memória', data.memory || '-');
-        row('Disco', data.disk || '-');
+        row('Disco (WSL)', data.disk || '-');
+        row('Disco Windows (C:)', data.win_disk || '-', data.win_disk_baixo);
         row('Apache', serviceDot(data.apache));
         row('Cloudflare Tunnel', serviceDot(data.cloudflared));
         row('Docker', serviceDot(data.docker));
