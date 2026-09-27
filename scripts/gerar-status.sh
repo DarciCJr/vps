@@ -25,6 +25,13 @@ fi
 PUBLIC_IP=$(curl -s --max-time 8 https://ifconfig.me || echo "indisponível")
 UPDATED_AT=$(date '+%d/%m/%Y %H:%M:%S')
 
+RAM_TEST_FILE="/var/www/html/ram-test.json"
+if [ -f "$RAM_TEST_FILE" ]; then
+  RAM_TEST=$(cat "$RAM_TEST_FILE")
+else
+  RAM_TEST='{"status":"nunca_testado"}'
+fi
+
 cat > /var/www/html/status.json << JSON
 {
   "uptime": "$UPTIME",
@@ -35,6 +42,7 @@ cat > /var/www/html/status.json << JSON
   "cloudflared": $CLOUDFLARED,
   "docker": $DOCKER,
   "containers": $CONTAINERS,
+  "ram_test": $RAM_TEST,
   "updated_at": "$UPDATED_AT"
 }
 JSON

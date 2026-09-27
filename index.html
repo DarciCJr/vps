@@ -143,6 +143,12 @@
           data.containers.forEach(c => row(c.name, serviceDot(c.up)));
         }
 
+        if (data.ram_test) {
+          const rt = data.ram_test.status;
+          const rotulo = {ok: '✅ OK', falhou: '❌ Falhou', nunca_testado: 'Ainda não testado', indisponivel: 'Indisponível'}[rt] || rt;
+          row('Teste de RAM', rotulo + (data.ram_test.testado_em ? ' (' + data.ram_test.testado_em + ')' : ''));
+        }
+
         document.getElementById('status-updated').textContent =
           'Atualizado: ' + (data.updated_at || '-');
       })
