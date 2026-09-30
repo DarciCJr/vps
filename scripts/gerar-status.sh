@@ -25,6 +25,35 @@ if [ -x "$POWERSHELL" ]; then
   fi
 fi
 
+# Placa de vídeo (GPU) — uso, VRAM e temperatura em tempo real.
+GPU_USO="indisponível"
+GPU_VRAM="indisponível"
+GPU_TEMP="indisponível"
+if command -v nvidia-smi >/dev/null 2>&1; then
+  GPU_RAW=$(nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits 2>/dev/null)
+  if [ -n "$GPU_RAW" ]; then
+    GPU_UTIL=$(echo "$GPU_RAW" | cut -d',' -f1 | xargs)
+    GPU_MEM_USADA=$(echo "$GPU_RAW" | cut -d',' -f2 | xargs)
+    GPU_MEM_TOTAL=$(echo "$GPU_RAW" | cut -d',' -f3 | xargs)
+    GPU_TEMP_RAW=$(echo "$GPU_RAW" | cut -d',' -f4 | xargs)
+    GPU_USO="${GPU_UTIL}%"
+    GPU_VRAM="${GPU_MEM_USADA}MB / ${GPU_MEM_TOTAL}MB"
+    GPU_TEMP="${GPU_TEMP_RAW}°C"
+  fi
+fi
+
+# Pentes de memória RAM instalados — confirma que todos os pentes físicos
+# estão sendo reconhecidos pelo Windows (útil após o susto de hardware).
+RAM_PENTES="indisponível"
+if [ -x "$POWERSHELL" ]; then
+  RAM_RAW=$("$POWERSHELL" -NoProfile -Command '$m = Get-CimInstance Win32_PhysicalMemory; "{0};{1}" -f $m.Count, [math]::Round(($m | Measure-Object -Property Capacity -Sum).Sum/1GB,0)' 2>/dev/null | tr -d '\r')
+  if [ -n "$RAM_RAW" ]; then
+    RAM_QTD=$(echo "$RAM_RAW" | cut -d';' -f1)
+    RAM_TOTAL_GB=$(echo "$RAM_RAW" | cut -d';' -f2)
+    RAM_PENTES="${RAM_QTD} pente(s) — ${RAM_TOTAL_GB}GB no total"
+  fi
+fi
+
 is_active() {
   systemctl is-active --quiet "$1" && echo true || echo false
 }
@@ -59,6 +88,10 @@ cat > /var/www/html/status.json << JSON
   "disk": "$DISK",
   "win_disk": "$WIN_DISK",
   "win_disk_baixo": $WIN_DISK_BAIXO,
+  "gpu_uso": "$GPU_USO",
+  "gpu_vram": "$GPU_VRAM",
+  "gpu_temp": "$GPU_TEMP",
+  "ram_pentes": "$RAM_PENTES",
   "public_ip": "$PUBLIC_IP",
   "apache": $APACHE,
   "cloudflared": $CLOUDFLARED,

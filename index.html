@@ -138,6 +138,10 @@
         row('Memória', data.memory || '-');
         row('Disco (WSL)', data.disk || '-');
         row('Disco Windows (C:)', data.win_disk || '-', data.win_disk_baixo);
+        row('Memória RAM (pentes)', data.ram_pentes || '-');
+        row('GPU — uso', data.gpu_uso || '-');
+        row('GPU — VRAM', data.gpu_vram || '-');
+        row('GPU — temperatura', data.gpu_temp || '-');
         row('Apache', serviceDot(data.apache));
         row('Cloudflare Tunnel', serviceDot(data.cloudflared));
         row('Docker', serviceDot(data.docker));
