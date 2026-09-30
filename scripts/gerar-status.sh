@@ -29,8 +29,11 @@ fi
 GPU_USO="indisponível"
 GPU_VRAM="indisponível"
 GPU_TEMP="indisponível"
-if command -v nvidia-smi >/dev/null 2>&1; then
-  GPU_RAW=$(nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits 2>/dev/null)
+# Caminho absoluto: o cron roda com PATH mínimo e não acha o nvidia-smi do WSL.
+NVIDIA_SMI="/usr/lib/wsl/lib/nvidia-smi"
+[ -x "$NVIDIA_SMI" ] || NVIDIA_SMI=$(command -v nvidia-smi 2>/dev/null)
+if [ -n "$NVIDIA_SMI" ] && [ -x "$NVIDIA_SMI" ]; then
+  GPU_RAW=$("$NVIDIA_SMI" --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits 2>/dev/null)
   if [ -n "$GPU_RAW" ]; then
     GPU_UTIL=$(echo "$GPU_RAW" | cut -d',' -f1 | xargs)
     GPU_MEM_USADA=$(echo "$GPU_RAW" | cut -d',' -f2 | xargs)
